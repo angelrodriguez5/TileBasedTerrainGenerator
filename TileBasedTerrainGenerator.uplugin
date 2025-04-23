@@ -23,6 +23,11 @@
 			"Name": "TileBasedTerrainGeneratorEditor",
 			"Type": "Editor",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "TileBasedTerrainGeneratorUnrealWrapper",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
 		}
 	]
 }
