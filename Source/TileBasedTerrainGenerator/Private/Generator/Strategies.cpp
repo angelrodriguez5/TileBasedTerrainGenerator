@@ -1,16 +1,16 @@
-#include "Strategies.h"
+#include "Generator/Strategies.h"
+#include "Generator/VectorUtils.h"
 #include <random>
-#include "VectorUtils.h"
 
 /// <summary>
 /// Returns a random tile in the cell's superposition
 /// </summary>
 /// <returns>If no tile can be chosen, it should return a nullptr</returns>
-std::shared_ptr<TileBase> RandomTileStrategy(TileMapBase& map, const CellIdx& cell)
+TileBase* RandomTileStrategy(TileMapBase& map, const CellIdx& cell)
 {
     auto tiles = map.GetSuperpositionAt(cell);
     if (tiles.size() == 0)
-        return std::shared_ptr<TileBase>();
+        return nullptr;
 
     std::random_device random_device;
     std::mt19937 engine{ random_device() };
@@ -24,11 +24,11 @@ std::shared_ptr<TileBase> RandomTileStrategy(TileMapBase& map, const CellIdx& ce
 /// tile increases if there are neighboring collapsed cells that contain it
 /// </summary>
 /// <returns>If no tile can be chosen, it should return a nullptr</returns>
-std::shared_ptr<TileBase> SimilarToNeighborTileStrategy(TileMapBase& map, const CellIdx& cell)
+TileBase* SimilarToNeighborTileStrategy(TileMapBase& map, const CellIdx& cell)
 {
     auto tiles = map.GetSuperpositionAt(cell);
     if (tiles.size() == 0)
-        return std::shared_ptr<TileBase>();
+        return nullptr;
 
     auto neighbors = map.GetNeighbors(cell);
 

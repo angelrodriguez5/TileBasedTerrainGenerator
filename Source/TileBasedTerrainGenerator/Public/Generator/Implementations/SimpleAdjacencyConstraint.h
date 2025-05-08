@@ -1,5 +1,5 @@
 #pragma once
-#include "Interfaces/TileConstraintBase.h"
+#include "Generator/Interfaces/TileConstraintBase.h"
 
 /// <summary>
 /// This constraint forbids one tile to be adjacent to another
@@ -7,7 +7,7 @@
 class SimpleAdjacencyConstraint : public TileConstraintBase
 {
 public:
-	SimpleAdjacencyConstraint(const std::shared_ptr<TileBase> tile, const std::shared_ptr<TileBase> other)
+	SimpleAdjacencyConstraint(const TileBase* tile, const TileBase* other)
 		: m_tile(tile), m_other(other)
 	{};
 
@@ -15,6 +15,7 @@ public:
 	bool IsConstraintFollowed(const TileConstraintArgs& args) override;
 
 private:
-	const std::shared_ptr<TileBase> m_tile, m_other;
+	const TileBase* m_tile;
+	const TileBase* m_other;
 
 };

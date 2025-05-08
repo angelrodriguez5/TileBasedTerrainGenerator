@@ -1,12 +1,11 @@
 #pragma once
-#include "Interfaces/TileBase.h"
+#include "Generator/Interfaces/TileBase.h"
 #include <memory>
 
 struct TileConstraintArgs
 {
-	std::shared_ptr<TileBase> tile, other;
-
-	TileConstraintArgs() {};
+	TileBase* tile;
+	TileBase* other;
 };
 
 class TileConstraintBase

@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "Interfaces/TileMapBase.h"
+#include "Generator/Interfaces/TileMapBase.h"
 
 class PostProcessingPassBase
 {

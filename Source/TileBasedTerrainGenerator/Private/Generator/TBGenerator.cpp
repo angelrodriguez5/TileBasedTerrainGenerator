@@ -1,12 +1,12 @@
-#include "TBGenerator.h"
-#include "VectorUtils.h"
+#include "Generator/TBGenerator.h"
+#include "Generator/Implementations/TileMapSquare.h"
+#include "Generator/VectorUtils.h"
 #include <iostream>
 #include <queue>
 #include <set>
 #include <format>
 #include <algorithm>
 #include <random>
-#include "Implementations/TileMapSquare.h"
 
 TBGenerator::TBGenerator()
 {}
@@ -62,8 +62,8 @@ void TBGenerator::PlantTerrainSeeds()
 	std::mt19937 engine{ random_device() };
 
 	// Select seed tiles
-	auto tiles = m_map->GetTileSet();
-	std::vector<std::shared_ptr<TileBase>> seeds;
+	auto tiles = m_tileSet;
+	std::vector<TileBase*> seeds;
 	for (int i = 0; i < m_numSeeds; i++)
 	{
 		size_t idx = std::uniform_int_distribution<size_t>{ 0, tiles.size() - 1 }(engine);
@@ -92,7 +92,7 @@ void TBGenerator::PlantTerrainSeeds()
 	}
 }
 
-void TBGenerator::CollapseAndUpdate(const CellIdx& chosenCell, const std::shared_ptr<TileBase> chosenTile)
+void TBGenerator::CollapseAndUpdate(const CellIdx& chosenCell, const TileBase* chosenTile)
 {
 	m_map->CollapseCell(chosenCell, chosenTile);
 
@@ -127,15 +127,15 @@ void TBGenerator::CollapseAndUpdate(const CellIdx& chosenCell, const std::shared
 
 }
 
-std::vector<std::shared_ptr<TileBase>> TBGenerator::GetUpdatedSuperposition(const CellIdx& cell)
+std::vector<TileBase*> TBGenerator::GetUpdatedSuperposition(const CellIdx& cell)
 {
 	// Check every permutation of current possible tile against every possible neighbor tile
 	TileConstraintArgs args;
 	auto currentSuperposition = m_map->GetSuperpositionAt(cell);
 	auto neighbors = m_map->GetNeighbors(cell);
-	std::vector<std::shared_ptr<TileBase>> newSuperposition;
+	std::vector<TileBase*> newSuperposition;
 
-	for (std::shared_ptr<TileBase> cellTile : currentSuperposition)
+	for (TileBase* cellTile : currentSuperposition)
 	{
 		args.tile = cellTile;
 		bool tileAllowed = true;
@@ -145,7 +145,7 @@ std::vector<std::shared_ptr<TileBase>> TBGenerator::GetUpdatedSuperposition(cons
 			// A cellTile is not allowed if its forbidden by all tiles of a neighbor's superposition
 			bool allowedAny = false;
 
-			for (std::shared_ptr<TileBase> neighborTile : m_map->GetSuperpositionAt(neighbor))
+			for (TileBase* neighborTile : m_map->GetSuperpositionAt(neighbor))
 			{
 				args.other = neighborTile;
 				bool tileCombinationAllowed = true;
@@ -188,9 +188,20 @@ std::vector<std::shared_ptr<TileBase>> TBGenerator::GetUpdatedSuperposition(cons
 void TBGenerator::SetTileMap(std::shared_ptr<TileMapBase> tileMap)
 {
 	m_map = tileMap;
+
+	if (!m_tileSet.empty())
+		m_map->SetTileSet(m_tileSet);
 }
 
-void TBGenerator::SetTileStrategy(const std::function<std::shared_ptr<TileBase>(TileMapBase&, const CellIdx&)> function)
+void TBGenerator::SetTileSet(std::vector<TileBase*> tileSet)
+{
+	m_tileSet = tileSet;
+
+	if (m_map)
+		m_map->SetTileSet(m_tileSet);
+}
+
+void TBGenerator::SetTileStrategy(const std::function<TileBase* (TileMapBase&, const CellIdx&)> function)
 {
 	m_tileStrategy = function;
 }
@@ -200,7 +211,7 @@ void TBGenerator::SetCellStrategy(const std::function<CellIdx(TileMapBase&)> fun
 	m_cellStrategy = function;
 }
 
-void TBGenerator::SetConstraints(const std::vector<std::shared_ptr<TileConstraintBase>>& constraints)
+void TBGenerator::SetConstraints(const std::vector<TileConstraintBase*>& constraints)
 {
 	m_constraints = constraints;
 }
@@ -210,8 +221,7 @@ void TBGenerator::SetNumSeeds(int numSeeds)
 	if (!m_map)
 		throw std::exception("TBGenerator.SetNumSeeds must be called after TBGenerator.SetTileMap");
 
-	int numTiles = m_map->GetTileSet().size();
-
+	int numTiles = m_tileSet.size();
 	if (m_forceDistinctSeedtiles && numTiles < numSeeds)
 	{
 		std::cout << "TBGenerator: if ForceDistinctSeedTiles is set to true, then NumSeeds must be less or equal to the size of the tileset. Setting NumSeeds = TileSet.size";
@@ -231,7 +241,7 @@ void TBGenerator::SetForceDistinctSeedTiles(bool value)
 	if (!m_forceDistinctSeedtiles)
 		return;
 
-	int numTiles = m_map->GetTileSet().size();
+	int numTiles = m_tileSet.size();
 	if (m_forceDistinctSeedtiles && numTiles < m_numSeeds)
 	{
 		std::cout << "TBGenerator: trying to activate ForceDistinctSeedTiles when NumSeeds was greater than TileSet size. Setting NumSeeds = TileSet.size";

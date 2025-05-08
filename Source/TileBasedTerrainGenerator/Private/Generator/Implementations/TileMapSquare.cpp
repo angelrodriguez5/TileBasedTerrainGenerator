@@ -1,33 +1,16 @@
-#include "Implementations/TileMapSquare.h"
+#include "Generator/Implementations/TileMapSquare.h"
+#include "Generator/VectorUtils.h"
 #include <array>
 #include <iostream>
-#include "VectorUtils.h"
 
-TileMapSquare::TileMapSquare(const std::vector<std::shared_ptr<TileBase>>& tileSet, const int width, const int height)
-	: m_tileSet(tileSet)
-	, m_width(width)
+TileMapSquare::TileMapSquare(const int width, const int height)
+	: m_width(width)
 	, m_height(height)
+{}
+
+std::vector<TileBase*> TileMapSquare::GetSuperpositionAt(const CellIdx& cell)
 {
-
-	// Preload every garanteed superposition
-	m_possibleSuperpositions.reserve(m_tileSet.size() + 1);
-	for (auto tile : m_tileSet)
-	{
-		// a single choice of each tile
-		m_possibleSuperpositions.push_back({ tile });
-	}
-	// a choice of all tiles
-	m_possibleSuperpositions.push_back(m_tileSet);
-
-	std::cout << "TileMapSquare: initialized possible superpositions, total: " << m_possibleSuperpositions.size() << std::endl;
-
-	// Initialize map so that every cell can have any tile
-	m_mapCells = std::vector(m_width * m_height, (int)m_possibleSuperpositions.size() - 1);
-}
-
-std::vector<std::shared_ptr<TileBase>> TileMapSquare::GetSuperpositionAt(const CellIdx& cell)
-{
-	return std::vector<std::shared_ptr<TileBase>>(m_possibleSuperpositions[GetSuperpositionIndexAt(cell)]);
+	return std::vector<TileBase*>(m_possibleSuperpositions[GetSuperpositionIndexAt(cell)]);
 }
 
 std::vector<CellIdx> TileMapSquare::GetNeighbors(const CellIdx& cell)
@@ -87,32 +70,6 @@ void TileMapSquare::Set8Connectivity(const bool value)
 	m_is8Connectivity = value;
 }
 
-void TileMapSquare::PrintMap()
-{
-	CellIdx cell;
-
-	std::cout << "----- Map layout -----\n ";
-	for (int y = 0; y < m_height; y++)
-	{
-		cell.y = y;
-
-		for (int x = 0; x < m_width; x++)
-		{
-			cell.x = x;
-			if (IsCellCollapsed(cell))
-			{
-				auto superposition = GetSuperpositionAt(cell);
-				superposition[0]->Print();
-				std::cout << ' ';
-			}
-			else
-				std::cout << "? ";
-		}
-		std::cout << "\n ";
-	}
-	std::cout << "----------------------\n";
-}
-
 int TileMapSquare::GetSuperpositionIndexAt(const CellIdx& cellIdx)
 {
 	return m_mapCells[m_width * cellIdx.y + cellIdx.x];
@@ -123,9 +80,27 @@ void TileMapSquare::SetSuperpositionIndexAt(const CellIdx& cellIdx, const int su
 	m_mapCells[m_width * cellIdx.y + cellIdx.x] = superpositionIdx;
 }
 
-std::vector<std::shared_ptr<TileBase>> TileMapSquare::GetTileSet()
+std::vector<TileBase*> TileMapSquare::GetTileSet()
 {
 	return m_tileSet;
+}
+
+void TileMapSquare::SetTileSet(std::vector<TileBase*> tileSet)
+{
+	m_tileSet = tileSet;
+
+	// Preload every garanteed superposition
+	m_possibleSuperpositions.reserve(m_tileSet.size() + 1);
+	for (auto tile : m_tileSet)
+	{
+		// a single choice of each tile
+		m_possibleSuperpositions.push_back({ tile });
+	}
+	// a choice of all tiles
+	m_possibleSuperpositions.push_back(m_tileSet);
+
+	// Initialize map so that every cell can have any tile
+	m_mapCells = std::vector(m_width * m_height, (int)m_possibleSuperpositions.size() - 1);
 }
 
 void TileMapSquare::Reset()
@@ -151,7 +126,7 @@ bool TileMapSquare::IsCellCollapsed(const CellIdx& cell)
 	return GetSuperpositionIndexAt(cell) < m_tileSet.size();
 }
 
-bool TileMapSquare::CollapseCell(const CellIdx& cell, const std::shared_ptr<TileBase> tile)
+bool TileMapSquare::CollapseCell(const CellIdx& cell, const TileBase* tile)
 {
 	if (IsCellCollapsed(cell))
 		return false;
@@ -192,7 +167,7 @@ bool TileMapSquare::CollapseCell(const CellIdx& cell, const std::shared_ptr<Tile
 	return true;
 }
 
-bool TileMapSquare::UpdateCellSuperposition(const CellIdx& cell, const std::vector<std::shared_ptr<TileBase>>& newSuperposition)
+bool TileMapSquare::UpdateCellSuperposition(const CellIdx& cell, const std::vector<TileBase*>& newSuperposition)
 {
 	int currentIdx = GetSuperpositionIndexAt(cell);
 	size_t newIdx = -1;

@@ -1,5 +1,5 @@
 #pragma once
-#include "Interfaces/TileBase.h"
+#include "Generator/Interfaces/TileBase.h"
 #include <vector>
 #include <set>
 #include <memory>
@@ -27,19 +27,22 @@ struct CellIdx
 class TileMapBase
 {
 public:
-	virtual std::vector<std::shared_ptr<TileBase>> GetTileSet() = 0;
+
+	virtual std::vector<TileBase*> GetTileSet() = 0;
+
+	virtual void SetTileSet(std::vector<TileBase*> tileSet) = 0;
 
 	virtual std::vector<CellIdx> GetNeighbors(const CellIdx &cell) = 0;
 
-	virtual std::vector<std::shared_ptr<TileBase>> GetSuperpositionAt(const CellIdx &cell) = 0;
+	virtual std::vector<TileBase*> GetSuperpositionAt(const CellIdx &cell) = 0;
 
 	virtual bool IsCellCollapsed(const CellIdx& cell) = 0;
 
 	// Returns wether or not the cell was collapsed correctly
-	virtual bool CollapseCell(const CellIdx& cell, const std::shared_ptr<TileBase> tile) = 0;
+	virtual bool CollapseCell(const CellIdx& cell, const TileBase* tile) = 0;
 
 	// Returns wether or not the superposition at the cell changed
-	virtual bool UpdateCellSuperposition(const CellIdx& cell, const std::vector<std::shared_ptr<TileBase>>& newSuperposition) = 0;
+	virtual bool UpdateCellSuperposition(const CellIdx& cell, const std::vector<TileBase*>& newSuperposition) = 0;
 
 	// Returns wether or not all the cells of the map are collapsed
 	virtual bool CheckComplete() = 0;
