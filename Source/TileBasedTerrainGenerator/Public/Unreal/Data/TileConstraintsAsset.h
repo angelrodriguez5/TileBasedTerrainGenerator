@@ -4,15 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Unreal/Data/TileAsset.h"	
+#include <Generator/Interfaces/TileConstraintBase.h>
 
-#include "TileConstraintRowData.generated.h"
+#include "TileConstraintsAsset.generated.h"
 
-USTRUCT()
-struct TILEBASEDTERRAINGENERATOR_API FTileConstraintRowData : public FTableRowBase
+USTRUCT(BlueprintType)
+struct FTileConstraintInfo
 {
-	GENERATED_BODY()	
+	GENERATED_BODY()
 
-public: 
+public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UTileAsset* tile;
 
@@ -24,6 +25,17 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (EditCondition = "exclusiveAllowedTiles"))
 	TArray<UTileAsset*> exclusiveTiles;
+};
 
-	void OnDataTableChanged(const UDataTable* InDataTable, const FName InRowName) override;
+UCLASS()
+class TILEBASEDTERRAINGENERATOR_API UTileConstraintsAsset : public UPrimaryDataAsset
+{
+	GENERATED_BODY()	
+
+public: 
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<FTileConstraintInfo> tileConstraintsInfo;
+
+	std::vector<TileConstraintBase*> CreateTileConstraints(const std::vector<TileBase*>& tileSet);
 };

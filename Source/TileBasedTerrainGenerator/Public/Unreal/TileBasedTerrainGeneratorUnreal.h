@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Generator/TBGenerator.h"
 #include "Unreal/Data/TileAsset.h"
+#include "Unreal/Data/TileConstraintsAsset.h"
 #include "Unreal/Data/SelectorEnums.h"
 
 #include "TileBasedTerrainGeneratorUnreal.generated.h"
@@ -31,13 +32,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileBasedTerrainGenerator")
 	TArray<UTileAsset*> tileSet;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileBasedTerrainGenerator")
+	UTileConstraintsAsset* tileConstraints;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileBasedTerrainGenerator\|Seeding")
 	int numSeeds = 3;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileBasedTerrainGenerator\|Seeding")
 	bool forceDistinctSeedTiles = true;
 
-	// How we choose the tile from the possible set
+	// How we choose the tile from all possibilities in the selected cell
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileBasedTerrainGenerator\|Advanced")
 	ETileStrategy tileStrategy = ETileStrategy::SimilarToNeighborTile;
 
@@ -47,5 +51,4 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "TileBasedTerrainGenerator")
 	void GenerateTiles();
-
 };

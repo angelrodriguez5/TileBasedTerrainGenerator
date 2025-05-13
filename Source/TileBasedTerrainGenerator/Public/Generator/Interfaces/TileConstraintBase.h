@@ -15,4 +15,8 @@ public:
 
 	virtual bool IsConstraintFollowed(const TileConstraintArgs &args) = 0;
 
+	virtual const void* GetTypeId() const = 0;
+
+	virtual bool operator==(const TileConstraintBase& other) const = 0;
+
 };
