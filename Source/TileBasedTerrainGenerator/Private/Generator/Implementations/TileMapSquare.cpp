@@ -10,7 +10,15 @@ TileMapSquare::TileMapSquare(const int width, const int height)
 
 std::vector<TileBase*> TileMapSquare::GetSuperpositionAt(const CellIdx& cell)
 {
-	return std::vector<TileBase*>(m_possibleSuperpositions[GetSuperpositionIndexAt(cell)]);
+	return m_possibleSuperpositions[GetSuperpositionIndexAt(cell)];
+}
+
+TileBase* TileMapSquare::GetTileAt(const CellIdx& cell)
+{
+	if (IsCellCollapsed(cell))
+		return m_possibleSuperpositions[GetSuperpositionIndexAt(cell)][0];
+	else
+		return nullptr;
 }
 
 std::vector<CellIdx> TileMapSquare::GetNeighbors(const CellIdx& cell)
@@ -170,10 +178,9 @@ bool TileMapSquare::CollapseCell(const CellIdx& cell, const TileBase* tile)
 bool TileMapSquare::UpdateCellSuperposition(const CellIdx& cell, const std::vector<TileBase*>& newSuperposition)
 {
 	int currentIdx = GetSuperpositionIndexAt(cell);
-	size_t newIdx = -1;
+	size_t newIdx = m_possibleSuperpositions.size();  // Invalid index
 
-	//Try to find superposition index, traverse vector backwards, since first stored superpositions are less likely to happen
-	for (size_t i = m_possibleSuperpositions.size() - 1; i > 0; i--)
+	for (size_t i = 0 ; i < m_possibleSuperpositions.size() ; i++)
 	{
 		if (AreSameVector(m_possibleSuperpositions[i], newSuperposition))
 		{
@@ -186,7 +193,7 @@ bool TileMapSquare::UpdateCellSuperposition(const CellIdx& cell, const std::vect
 		return false;
 
 	//If the new superposition was not found, add it to the list
-	if (newIdx == -1)
+	if (newIdx == m_possibleSuperpositions.size())
 	{
 		m_possibleSuperpositions.push_back(newSuperposition);
 		newIdx = m_possibleSuperpositions.size() - 1;

@@ -11,6 +11,7 @@ public:
 	void SetTileSet(std::vector<TileBase*> tileSet) override;
 	std::vector<CellIdx> GetNeighbors(const CellIdx& cell) override;
 	std::vector<TileBase*> GetSuperpositionAt(const CellIdx& cell) override;
+	TileBase* GetTileAt(const CellIdx& cell) override;
 	bool CheckComplete() override;
 	bool IsCellCollapsed(const CellIdx& cell) override;
 	bool CollapseCell(const CellIdx& cell, const TileBase* tile) override;

@@ -36,6 +36,8 @@ public:
 
 	virtual std::vector<TileBase*> GetSuperpositionAt(const CellIdx &cell) = 0;
 
+	virtual TileBase* GetTileAt(const CellIdx& cell) = 0;
+
 	virtual bool IsCellCollapsed(const CellIdx& cell) = 0;
 
 	// Returns wether or not the cell was collapsed correctly

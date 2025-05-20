@@ -20,6 +20,7 @@ public:
 	UTileAsset();
 	~UTileAsset();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Config")
-	AActor* tileActor;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<AActor> tileActor;
+
 };

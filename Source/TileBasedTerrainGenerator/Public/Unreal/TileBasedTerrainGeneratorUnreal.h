@@ -23,6 +23,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileBasedTerrainGenerator")
 	ETileMapType tileMapType = ETileMapType::Square;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileBasedTerrainGenerator", meta = (EditCondition = "tileMapType==ETileMapType::Square"))
+	bool squareMap8Connectivity = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileBasedTerrainGenerator")
 	int tileMapWidth = 20;
 
@@ -34,6 +37,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileBasedTerrainGenerator")
 	UTileConstraintsAsset* tileConstraints;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileBasedTerrainGenerator")
+	FVector tileSize = FVector(100.f, 100.f, 100.f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileBasedTerrainGenerator\|Seeding")
 	int numSeeds = 3;
@@ -51,4 +57,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "TileBasedTerrainGenerator")
 	void GenerateTiles();
+
+public: // Internal
+	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly)
+	TArray<AActor*> spawnedTileActors;
+
+
+private:
+
+	void SpawnTileActors(std::shared_ptr<TileMapBase> tileMap);
 };

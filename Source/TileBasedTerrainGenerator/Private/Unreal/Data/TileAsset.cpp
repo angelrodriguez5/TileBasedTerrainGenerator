@@ -7,7 +7,6 @@
 UTileAsset::UTileAsset()
 {
 	tileID = GetTypeHash(GetPrimaryAssetId());
-	tileActor = nullptr;
 }
 
 UTileAsset::~UTileAsset()
