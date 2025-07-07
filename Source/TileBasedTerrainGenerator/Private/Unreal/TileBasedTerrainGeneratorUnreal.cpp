@@ -1,6 +1,5 @@
 
 
-
 #include "Unreal/TileBasedTerrainGeneratorUnreal.h"
 
 ATileBasedTerrainGenerator::ATileBasedTerrainGenerator()
@@ -48,6 +47,8 @@ void ATileBasedTerrainGenerator::GenerateTiles()
 void ATileBasedTerrainGenerator::SpawnTileActors(std::shared_ptr<TileMapBase> tileMap)
 {
 	FVector origin = GetActorLocation();
+	std::vector<double> stdOrigin = {origin.X, origin.Y};
+	std::vector<double> stdTileSize = { tileSize.X, tileSize.Y };
 	CellIdx cell;
 
 	spawnedTileActors.Reserve(tileMap->GetWidth() * tileMap->GetHeight());
@@ -59,9 +60,13 @@ void ATileBasedTerrainGenerator::SpawnTileActors(std::shared_ptr<TileMapBase> ti
 			cell.x = j;
 
 			UTileAsset* tile = (UTileAsset*) tileMap->GetTileAt(cell);
-			FVector offset = FVector(j * tileSize.X, i * tileSize.Y, 0.f);
+			std::vector<double> stdPosition = tileMap->GetCellTransformPosition(cell, stdTileSize, stdOrigin);
+			FVector position = FVector(stdPosition[0], stdPosition[1], 0.0f);
 
-			auto actor = GetWorld()->SpawnActor<AActor>(tile->tileActor, origin + offset, FRotator::ZeroRotator);
+			FActorSpawnParameters params;
+			params.Name = MakeUniqueObjectName(GetWorld(), AActor::StaticClass(), FName(FString::Printf(TEXT("Tile%s_(%d,%d)"), *tile->tileName.ToString(), j, i)));
+			auto actor = GetWorld()->SpawnActor<AActor>(tile->tileActor, position, FRotator::ZeroRotator, params);
+			actor->Rename(*params.Name.ToString());
 			spawnedTileActors.Emplace(actor);
 		}
 }

@@ -1,19 +1,19 @@
-#include "Generator/Implementations/TileMapSquare.h"
+#include "Generator/Implementations/TileMapHex.h"
 #include "Generator/VectorUtils.h"
 #include <array>
 #include <iostream>
 
-TileMapSquare::TileMapSquare(const int width, const int height)
+TileMapHex::TileMapHex(const int width, const int height)
 	: m_width(width)
 	, m_height(height)
 {}
 
-std::vector<TileBase*> TileMapSquare::GetSuperpositionAt(const CellIdx& cell)
+std::vector<TileBase*> TileMapHex::GetSuperpositionAt(const CellIdx& cell)
 {
 	return m_possibleSuperpositions[GetSuperpositionIndexAt(cell)];
 }
 
-TileBase* TileMapSquare::GetTileAt(const CellIdx& cell)
+TileBase* TileMapHex::GetTileAt(const CellIdx& cell)
 {
 	if (IsCellCollapsed(cell))
 		return m_possibleSuperpositions[GetSuperpositionIndexAt(cell)][0];
@@ -21,32 +21,31 @@ TileBase* TileMapSquare::GetTileAt(const CellIdx& cell)
 		return nullptr;
 }
 
-std::vector<CellIdx> TileMapSquare::GetNeighbors(const CellIdx& cell)
+std::vector<CellIdx> TileMapHex::GetNeighbors(const CellIdx& cell)
 {
-    std::vector<CellIdx> neighbors;
+	std::vector<CellIdx> neighbors;
 
 	std::vector<std::pair<int, int>> neighborOffsets;
-	if (m_is8Connectivity)
+	// Odd rows behave differently than even rows
+	if (cell.y % 2 == 0)
 	{
-		neighborOffsets.reserve(8);
-		// 8-connectivity neighbours
-		neighborOffsets.push_back(std::make_pair(-1,-1));
-		neighborOffsets.push_back(std::make_pair( 0,-1));
-		neighborOffsets.push_back(std::make_pair( 1,-1));
-		neighborOffsets.push_back(std::make_pair(-1, 0));
-		neighborOffsets.push_back(std::make_pair( 1, 0));
-		neighborOffsets.push_back(std::make_pair(-1, 1));
-		neighborOffsets.push_back(std::make_pair( 0, 1));
-		neighborOffsets.push_back(std::make_pair( 1, 1));
+		neighborOffsets.reserve(6);
+		neighborOffsets.push_back(std::make_pair(-1, -1));
+		neighborOffsets.push_back(std::make_pair(-1,  0));
+		neighborOffsets.push_back(std::make_pair( 0, -1));
+		neighborOffsets.push_back(std::make_pair( 0,  0));
+		neighborOffsets.push_back(std::make_pair( 1, -1));
+		neighborOffsets.push_back(std::make_pair( 1,  0));
 	}
 	else
 	{
-		neighborOffsets.reserve(4);
-		// 4-connectivity neighbours
-		neighborOffsets.push_back(std::make_pair( 1, 0));
-		neighborOffsets.push_back(std::make_pair(-1, 0));
-		neighborOffsets.push_back(std::make_pair( 0, 1));
-		neighborOffsets.push_back(std::make_pair( 0,-1));
+		neighborOffsets.reserve(6);
+		neighborOffsets.push_back(std::make_pair(-1,  0));
+		neighborOffsets.push_back(std::make_pair(-1,  1));
+		neighborOffsets.push_back(std::make_pair( 0, -1));
+		neighborOffsets.push_back(std::make_pair( 0,  0));
+		neighborOffsets.push_back(std::make_pair( 1,  0));
+		neighborOffsets.push_back(std::make_pair( 1,  1));
 	}
 
 	for (auto offset : neighborOffsets)
@@ -60,7 +59,7 @@ std::vector<CellIdx> TileMapSquare::GetNeighbors(const CellIdx& cell)
 	return neighbors;
 }
 
-bool TileMapSquare::CheckComplete()
+bool TileMapHex::CheckComplete()
 {
 	// All superpositions that point to a single tile are stored at the beginning of m_possibleSuperpositions
 	int chosenCellMaxIdx = m_tileSet.size() - 1;
@@ -73,27 +72,22 @@ bool TileMapSquare::CheckComplete()
 	return true;
 }
 
-void TileMapSquare::Set8Connectivity(const bool value)
-{
-	m_is8Connectivity = value;
-}
-
-int TileMapSquare::GetSuperpositionIndexAt(const CellIdx& cellIdx)
+int TileMapHex::GetSuperpositionIndexAt(const CellIdx& cellIdx)
 {
 	return m_mapCells[m_width * cellIdx.y + cellIdx.x];
 }
 
-void TileMapSquare::SetSuperpositionIndexAt(const CellIdx& cellIdx, const int superpositionIdx)
+void TileMapHex::SetSuperpositionIndexAt(const CellIdx& cellIdx, const int superpositionIdx)
 {
 	m_mapCells[m_width * cellIdx.y + cellIdx.x] = superpositionIdx;
 }
 
-std::vector<TileBase*> TileMapSquare::GetTileSet()
+std::vector<TileBase*> TileMapHex::GetTileSet()
 {
 	return m_tileSet;
 }
 
-void TileMapSquare::SetTileSet(std::vector<TileBase*> tileSet)
+void TileMapHex::SetTileSet(std::vector<TileBase*> tileSet)
 {
 	m_tileSet = tileSet;
 
@@ -111,7 +105,7 @@ void TileMapSquare::SetTileSet(std::vector<TileBase*> tileSet)
 	m_mapCells = std::vector(m_width * m_height, (int)m_possibleSuperpositions.size() - 1);
 }
 
-void TileMapSquare::Reset()
+void TileMapHex::Reset()
 {
 	for (size_t i = 0; i < m_mapCells.size(); i++)
 	{
@@ -119,33 +113,44 @@ void TileMapSquare::Reset()
 	}
 }
 
-int TileMapSquare::GetWidth()
+int TileMapHex::GetWidth()
 {
 	return m_width;
 }
 
-int TileMapSquare::GetHeight()
+int TileMapHex::GetHeight()
 {
 	return m_height;
 }
 
-std::vector<double> TileMapSquare::GetCellTransformPosition(const CellIdx& cell, const std::vector<double>& tileSize, const std::vector<double>& origin)
+std::vector<double> TileMapHex::GetCellTransformPosition(const CellIdx& cell, const std::vector<double>& tileSize, const std::vector<double>& origin)
 {
 	if (tileSize.size() != 2 || origin.size() != 2)
 		throw std::invalid_argument("Tile size and origin must be a vectors of 2 doubles");
 
-	return std::vector<double>{
-		origin[0] + cell.x * tileSize[0], 
-		origin[1] + cell.y * tileSize[1] 
-	};
+	// Odd rows are offset by half a tile size in the x direction
+	if (true)
+	{
+		return std::vector<double>{
+			origin[0] + cell.x * tileSize[0],
+			origin[1] + cell.y * 3/4 * tileSize[1]
+		};
+	}
+	else 
+	{
+		return std::vector<double>{
+			origin[0] + tileSize[0] / 2 + cell.x * tileSize[0],
+			origin[1] + cell.y * 3/4 * tileSize[1]
+		};
+	}
 }
 
-bool TileMapSquare::IsCellCollapsed(const CellIdx& cell)
+bool TileMapHex::IsCellCollapsed(const CellIdx& cell)
 {
 	return GetSuperpositionIndexAt(cell) < m_tileSet.size();
 }
 
-bool TileMapSquare::CollapseCell(const CellIdx& cell, const TileBase* tile)
+bool TileMapHex::CollapseCell(const CellIdx& cell, const TileBase* tile)
 {
 	if (IsCellCollapsed(cell))
 		return false;
@@ -186,12 +191,12 @@ bool TileMapSquare::CollapseCell(const CellIdx& cell, const TileBase* tile)
 	return true;
 }
 
-bool TileMapSquare::UpdateCellSuperposition(const CellIdx& cell, const std::vector<TileBase*>& newSuperposition)
+bool TileMapHex::UpdateCellSuperposition(const CellIdx& cell, const std::vector<TileBase*>& newSuperposition)
 {
 	int currentIdx = GetSuperpositionIndexAt(cell);
 	size_t newIdx = m_possibleSuperpositions.size();  // Invalid index
 
-	for (size_t i = 0 ; i < m_possibleSuperpositions.size() ; i++)
+	for (size_t i = 0; i < m_possibleSuperpositions.size(); i++)
 	{
 		if (AreSameVector(m_possibleSuperpositions[i], newSuperposition))
 		{

@@ -21,6 +21,9 @@ public:
 	~UTileAsset();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FName tileName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AActor> tileActor;
 
 };

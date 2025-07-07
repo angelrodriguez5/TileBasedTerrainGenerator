@@ -6,6 +6,7 @@
 
 #include "CoreMinimal.h"
 #include "Generator/Implementations/TileMapSquare.h"
+#include "Generator/Implementations/TileMapHex.h"
 #include "Generator/Strategies.h"
 
 #include "SelectorEnums.generated.h"
@@ -25,7 +26,7 @@ inline std::shared_ptr<TileMapBase> CreateTileMap(ETileMapType tileMapType, int 
 	case ETileMapType::Square:
 		return std::make_shared<TileMapSquare>(width, height);
 	case ETileMapType::Hexagonal:
-		//return new TileMapHexagonal(width, height);
+		return std::make_shared<TileMapHex>(width, height);
 	default:
 		return nullptr;
 	}

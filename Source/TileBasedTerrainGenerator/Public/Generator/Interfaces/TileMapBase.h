@@ -54,4 +54,6 @@ public:
 	virtual int GetWidth() = 0;
 
 	virtual int GetHeight() = 0;
+
+	virtual std::vector<double> GetCellTransformPosition(const CellIdx& cell, const std::vector<double>& tileSize, const std::vector<double>& origin) = 0;
 };

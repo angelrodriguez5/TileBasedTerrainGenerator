@@ -1,10 +1,20 @@
 #pragma once
 #include "Generator/Interfaces/TileMapBase.h"
 
-class TileMapSquare : public TileMapBase 
+/// <summary>
+/// A hexagonal tile map. All calculations are based on the following asumptions:
+///  - Cells will be positioned with a "pointy top" orientation
+///  - The first row will start at the origin and the second row will share the top right edge
+///  - The third row will again be aligned with the origin, as it continues in a zig-zag pattern
+///  - That is, odd rows will be offset by half a tile size in the x direction
+///  - Tile size is defined as follows:
+///    - X = width = flat to flat
+///    - Y = height = point to point
+/// </summary>
+class TileMapHex : public TileMapBase
 {
 public:
-	TileMapSquare(const int width, const int height);;
+	TileMapHex(const int width, const int height);;
 
 	// Inherited via TileMapBase
 	std::vector<TileBase*> GetTileSet() override;
@@ -21,11 +31,8 @@ public:
 	int GetHeight() override;
 	std::vector<double> GetCellTransformPosition(const CellIdx& cell, const std::vector<double>& tileSize, const std::vector<double>& origin) override;
 
-	void Set8Connectivity(const bool value);
-
 protected:
 	const int m_width, m_height;
-	bool m_is8Connectivity = false;
 
 	std::vector<TileBase*> m_tileSet;
 	// The content of each cell is the index in m_possibleSuperpositions which 
@@ -36,5 +43,6 @@ protected:
 
 	int GetSuperpositionIndexAt(const CellIdx& cellIdx);
 	void SetSuperpositionIndexAt(const CellIdx& cellIdx, const int superpositionIdx);
+
 
 };
